@@ -30,7 +30,8 @@ export default function HomePage() {
     setMessage('')
 
     try {
-      const res = await fetch('/api/requests', {
+      // 🔹 ปรับ Endpoint ให้ตรงกับ app/api/maintenance/route.ts
+      const res = await fetch('/api/maintenance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -64,7 +65,7 @@ export default function HomePage() {
       <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-lg space-y-6">
         
         <div className="flex justify-between items-center border-b pb-4">
-          <h1 className="text-xl font-bold text-gray-800">🛠️ ฟอร์มแจ้งซ่อมบำรุง (MMS)</h1>
+          <h1 className="text-xl font-bold text-gray-800">🛠️️ ฟอร์มแจ้งซ่อมบำรุง (MMS)</h1>
           <button
             onClick={handleLogout}
             type="button"
