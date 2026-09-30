@@ -137,9 +137,9 @@ export default function HomePage() {
               onChange={(e) => setPriority(e.target.value)}
               className="mt-1 w-full p-2.5 border rounded-lg border-gray-300 focus:ring-2 focus:ring-green-500"
             >
-              <option value="low">ปกติ (Low)</option>
-              <option value="normal">ปานกลาง (Normal)</option>
-              <option value="high">ด่วน (High)</option>
+              <option value="low">🟢 ปกติ (Low)</option>
+              <option value="normal">🟡 ปานกลาง (Normal)</option>
+              <option value="high">🟠 ด่วน (High)</option>
               <option value="critical">🔴 ด่วนที่สุด (Critical)</option>
             </select>
           </div>
