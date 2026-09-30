@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -35,12 +35,10 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
 
-  // ป้องกันการเข้าหน้าหลักหากยังไม่ล็อกอิน
   if (!user && pathname !== '/login' && pathname !== '/register') {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // ถ้าล็อกอินแล้ว ห้ามเข้าหน้า /login หรือ /register
   if (user && (pathname === '/login' || pathname === '/register')) {
     return NextResponse.redirect(new URL('/', request.url))
   }
