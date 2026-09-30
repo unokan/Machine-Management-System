@@ -10,6 +10,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  
+  // 🔹 State สำหรับนับจำนวนครั้งที่กรอกรหัสผ่านผิด
+  const [failedAttempts, setFailedAttempts] = useState(0)
+
   const router = useRouter()
 
   const supabase = createBrowserClient(
@@ -19,18 +23,40 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // 1. ตรวจสอบหากถูกล็อกชั่วคราวจากการกรอกผิดเกิน 5 ครั้ง
+    if (failedAttempts >= 5) {
+      setError('คุณกรอกรหัสผ่านผิดเกิน 5 ครั้ง บัญชีถูกล็อกชั่วคราว กรุณาลองใหม่ในอีก 5 นาที')
+      return
+    }
+
     setLoading(true)
     setError(null)
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error: authError } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
-    if (error) {
-      setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง')
+    if (authError) {
+      const newCount = failedAttempts + 1
+      setFailedAttempts(newCount)
+
+      // 2. ดักจับทั้ง Status 429 จาก Supabase Server และการนับจำนวนครั้งฝั่ง Client[cite: 2]
+      if (
+        newCount >= 5 ||
+        authError.status === 429 ||
+        authError.message.toLowerCase().includes('too many requests') ||
+        authError.message.toLowerCase().includes('rate limit')
+      ) {
+        setError('คุณกรอกรหัสผ่านผิดเกิน 5 ครั้ง บัญชีถูกล็อกชั่วคราว กรุณาลองใหม่ในอีก 5 นาที')
+      } else {
+        setError(`อีเมลหรือรหัสผ่านไม่ถูกต้อง (ลองแล้ว ${newCount}/5 ครั้ง)`)
+      }
       setLoading(false)
     } else {
+      // ล็อกอินสำเร็จ: รีเซ็ตค่าการนับ และนำผู้ใช้เข้าสู่ระบบ
+      setFailedAttempts(0)
       router.push('/')
       router.refresh()
     }
@@ -43,8 +69,9 @@ export default function LoginPage() {
           เข้าสู่ระบบ MMS
         </h2>
         
+        {/* กล่องแสดงข้อความเตือนเมื่อเกิด Error */}
         {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-200">
             {error}
           </div>
         )}
@@ -76,7 +103,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || failedAttempts >= 5}
             className="w-full bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
           >
             {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
