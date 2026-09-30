@@ -1,6 +1,6 @@
 #                  รายงานการประยุกต์ใช้ปัญญาประดิษฐ์ (AI Usage Report)
 ##      โครงการ: ระบบจัดการเครื่องจักร (Machine Management System: MMS)
---
+
 **สถาปัตยกรรมระบบ: Next.js (App Router), Supabase (Auth/SSR/Database), Vercel Hosting, GitHub Actions (CI/CD)**
 
 **1. วัตถุประสงค์ของการใช้ AI**
