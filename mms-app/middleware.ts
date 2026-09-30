@@ -17,9 +17,7 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           response = NextResponse.next({
             request,
           })
@@ -37,32 +35,19 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
 
-  // 1. ถ้ายังไม่ได้ล็อกอิน และพยายามเข้าหน้าอื่นที่ไม่ใช่ /login หรือ /register ให้ดีดไปหน้า /login
-  if (!user && !['/login', '/register'].includes(pathname)) {
+  // ป้องกันการเข้าหน้าหลักหากยังไม่ล็อกอิน
+  if (!user && pathname !== '/login' && pathname !== '/register') {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // 2. ถ้าล็อกอินแล้ว แล้วพยายามเข้าหน้า /login หรือ /register ให้ดีดไปหน้าหลัก /
-  if (user && ['/login', '/register'].includes(pathname)) {
+  // ถ้าล็อกอินแล้ว ห้ามเข้าหน้า /login หรือ /register
+  if (user && (pathname === '/login' || pathname === '/register')) {
     return NextResponse.redirect(new URL('/', request.url))
-  }
-
-  // 3. ถ้าพยายามเข้าหน้า /dashboard ตรวจสอบว่าเป็น admin หรือไม่
-  if (user && pathname.startsWith('/dashboard')) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (profile?.role !== 'admin') {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
   }
 
   return response
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 }
