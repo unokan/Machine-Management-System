@@ -22,13 +22,31 @@ export default function RegisterPage() {
     setLoading(true)
     setError(null)
 
-    const { error } = await supabase.auth.signUp({
+    // ตรวจสอบความยาวรหัสผ่านฝั่ง Client ก่อน
+    if (password.length < 6) {
+      setError('รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร')
+      setLoading(false)
+      return
+    }
+
+    const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        // 🔹 กำหนด Default Role เป็น Technician เมื่อสมัครใหม่
+        data: {
+          role: 'Technician',
+        },
+      },
     })
 
-    if (error) {
-      setError(error.message)
+    if (signUpError) {
+      // แปลข้อความ Error ภาษาอังกฤษเป็นภาษาไทย
+      if (signUpError.message.includes('already registered')) {
+        setError('อีเมลนี้ถูกใช้งานในระบบแล้ว')
+      } else {
+        setError(signUpError.message)
+      }
       setLoading(false)
     } else {
       alert('ลงทะเบียนสำเร็จ! กรุณาเข้าสู่ระบบ')
@@ -44,7 +62,7 @@ export default function RegisterPage() {
         </h2>
         
         {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-200">
             {error}
           </div>
         )}
@@ -67,6 +85,7 @@ export default function RegisterPage() {
             <input
               type="password"
               required
+              minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1 w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 border-gray-300"
